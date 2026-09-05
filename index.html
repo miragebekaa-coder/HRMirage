@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل الدخول - نظام المخالفات</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary: #0056b3; --secondary: #007bff; --success: #28a745; --bg: #f0f4f8; --text: #333; }
+        body { font-family: 'Tajawal', sans-serif; background: var(--bg); margin: 0; display: flex; flex-direction: column; min-height: 100vh; color: var(--text); }
+        .top-nav { background: linear-gradient(90deg, #00326b, var(--primary)); color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .nav-right { font-size: 20px; font-weight: 900; letter-spacing: 1px; }
+        .nav-left { font-size: 14px; font-weight: 700; opacity: 0.9; background: rgba(255,255,255,0.1); padding: 5px 15px; border-radius: 20px;}
+        .main-content { flex: 1; display: flex; justify-content: center; align-items: center; padding: 20px; flex-direction: column; gap: 25px; }
+        .glass-box { background: rgba(255, 255, 255, 0.95); padding: 40px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); width: 100%; max-width: 380px; text-align: center; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.5);}
+        h3 { margin-top: 0; color: var(--primary); font-size: 22px; margin-bottom: 25px;}
+        input { width: 100%; padding: 14px; margin-bottom: 20px; border: 1px solid #ddd; border-radius: 8px; font-family: 'Tajawal'; font-size: 15px; box-sizing: border-box; transition: 0.3s; background: #f9fbfd;}
+        input:focus { border-color: var(--secondary); outline: none; box-shadow: 0 0 0 3px rgba(0,123,255,0.1); background: #fff;}
+        button { width: 100%; padding: 14px; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; font-family: 'Tajawal'; transition: 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .btn-login { background: var(--secondary); color: white; }
+        .btn-login:hover { background: var(--primary); transform: translateY(-2px); }
+        .btn-submit { background: var(--success); color: white; }
+        .btn-submit:hover { background: #218838; transform: translateY(-2px); }
+    </style>
+</head>
+<body>
+    <div class="top-nav">
+        <div class="nav-right">🏢 شركة ميراج</div>
+        <div class="nav-left">يا منصور أمت | اصدار 1.0</div>
+    </div>
+
+    <div class="main-content">
+        <div class="glass-box">
+            <h3>تسجيل دخول الإدارة</h3>
+            <form id="loginForm">
+                <input type="text" name="username" placeholder="👤 اسم المستخدم" required>
+                <input type="password" name="password" placeholder="🔒 كلمة المرور" required>
+                <button type="submit" class="btn-login">تسجيل الدخول</button>
+            </form>
+        </div>
+
+        <div class="glass-box" style="padding: 25px 40px;">
+            <h3 style="margin-bottom: 15px; font-size:18px;">بوابة المشرفين والعمال</h3>
+            <button onclick="location.href='supervisor.html'" class="btn-submit">📝 تقديم بلاغ مخالفة جديد</button>
+        </div>
+    </div>
+
+    <script>
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz--ncBRJxdcpwY5qxEYp62fuc9zlVB0vm9OMjF2zV045gW68QL0tXpSKjU5pHCmcKdrQ/exec";
+        document.getElementById('loginForm').onsubmit = function(e) {
+            e.preventDefault();
+            var btn = this.querySelector('button'); btn.innerText = "جاري التحقق..."; btn.disabled = true;
+            var fd = new FormData(this); fd.append("action", "login");
+            fetch(SCRIPT_URL, { method: 'POST', body: fd })
+                .then(r => r.json()).then(data => {
+                    if(data.status === "success") {
+                        localStorage.setItem("userRole", data.role); localStorage.setItem("userDept", data.department); localStorage.setItem("userName", fd.get("username"));
+                        location.href = "dashboard.html";
+                    } else { alert("بيانات الدخول خاطئة"); btn.innerText = "تسجيل الدخول"; btn.disabled = false; }
+                }).catch(() => { alert("خطأ في الاتصال"); btn.innerText = "تسجيل الدخول"; btn.disabled = false; });
+        };
+    </script>
+</body>
+</html>

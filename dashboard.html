@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>لوحة الإدارة - نظام المخالفات</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary: #0056b3; --secondary: #007bff; --bg: #f4f7f6; --text: #333; }
+        body { font-family: 'Tajawal', Arial, sans-serif; padding: 0; margin:0; background-color: var(--bg); color: var(--text);}
+        
+        /* Header */
+        .top-nav { background: linear-gradient(90deg, #00326b, var(--primary)); color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .nav-right { font-size: 20px; font-weight: 900; }
+        .nav-left { font-size: 14px; font-weight: 700; background: rgba(255,255,255,0.1); padding: 5px 15px; border-radius: 20px;}
+        
+        .main-container { padding: 20px; max-width: 1400px; margin: auto; }
+        .header-bar { display: flex; justify-content: space-between; align-items: center; background: white; padding: 15px 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px;}
+        
+        /* Stats & Filters */
+        .tools-bar { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 20px; align-items: center; }
+        .info-box { background: #fff; padding: 15px 20px; border-radius: 12px; display: flex; gap: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-right: 5px solid var(--primary); flex-grow: 1;}
+        .stat-item { text-align: center; }
+        .stat-title { font-size: 13px; color: #6c757d; font-weight: bold;}
+        .stat-value { font-size: 24px; font-weight: 900; display: block; margin-top: 5px;}
+        
+        .filter-box { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); display: flex; gap:10px; align-items: center; flex-grow: 2;}
+        select { padding: 10px; border-radius: 8px; border: 1px solid #ced4da; font-family: 'Tajawal'; font-weight:bold; font-size: 14px; outline:none; }
+        
+        /* Quick Filters for GM */
+        .quick-filters { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom:15px;}
+        .qf-btn { padding: 8px 15px; border-radius: 20px; border: 1px solid #ddd; background: white; cursor: pointer; font-family: 'Tajawal'; font-weight:bold; font-size:13px; transition: 0.2s;}
+        .qf-btn:hover, .qf-btn.active { background: var(--secondary); color: white; border-color: var(--secondary);}
+        
+        table { width: 100%; border-collapse: collapse; background: white; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-radius: 12px; overflow: hidden;}
+        th, td { border-bottom: 1px solid #e9ecef; padding: 15px; text-align: center; font-size:15px;}
+        th { background-color: var(--secondary); color: white; font-weight: 700; text-transform: uppercase; font-size:14px;}
+        tr:last-child td { border-bottom: none; }
+        tr:hover { background-color: #f8f9fa; }
+        
+        .badge { padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; color: white; display: inline-block; }
+        .badge-warning { background-color: #ffc107; color: #212529; } .badge-info { background-color: #17a2b8; } .badge-primary { background-color: #6f42c1; } .badge-success { background-color: #28a745; } 
+        
+        .btn { color: white; border: none; padding: 8px 15px; cursor: pointer; border-radius: 6px; font-weight: bold; font-size:14px; font-family: 'Tajawal'; transition: 0.3s; box-shadow: 0 2px 5px rgba(0,0,0,0.1);}
+        .btn-primary { background: #007bff; } .btn-primary:hover { transform: translateY(-2px); }
+        .btn-danger { background: #dc3545; } .btn-success { background: #28a745; } .btn-dark { background: #343a40; } .btn-purple { background: #6f42c1; }
+        
+        /* Modals */
+        .modal-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); backdrop-filter: blur(5px); z-index:999;}
+        .modal { position:absolute; top:50%; left:50%; transform: translate(-50%, -50%); background:white; padding:30px; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); width:650px; max-width: 95%; max-height: 90vh; overflow-y: auto;}
+        .details-card { background: #f8f9fa; border: 1px solid #e9ecef; padding: 20px; border-radius: 10px; margin-bottom: 20px; font-size: 15px; line-height: 1.8;}
+        input[type="text"], textarea { width: 100%; margin: 5px 0 15px 0; padding: 12px; box-sizing: border-box; border: 1px solid #ced4da; border-radius: 8px; font-family: 'Tajawal';}
+        .dh-options label { display: block; margin-bottom: 12px; cursor: pointer; font-weight: bold; font-size: 15px;}
+        .dh-sub-options { margin-right: 30px; padding-right: 15px; border-right: 3px solid #ccc; opacity: 0.5; pointer-events: none; transition: 0.3s;}
+        
+        /* Stats Table */
+        .stats-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        .stats-table th, .stats-table td { border: 1px solid #ddd; padding: 10px; text-align: center; }
+        .stats-table th { background: #343a40; color: white; }
+    </style>
+</head>
+<body>
+    <div class="top-nav">
+        <div class="nav-right">🏢 شركة ميراج</div>
+        <div class="nav-left">يا منصور أمت | اصدار 1.0</div>
+    </div>
+
+    <div class="main-container">
+        <div class="header-bar">
+            <h3 id="welcome" style="margin: 0; color: var(--primary);">لوحة الإدارة</h3>
+            <button class="btn btn-danger" onclick="localStorage.clear(); location.href='index.html'">تسجيل الخروج</button>
+        </div>
+
+        <div class="tools-bar">
+            <div id="statusInfo" class="info-box">جاري تحميل البيانات...</div>
+            
+            <div class="filter-box" id="filterBar" style="display:none;">
+                <label style="font-weight: bold; color: var(--primary);">🔍 فرز حسب المشروع:</label>
+                <select id="projectFilter" onchange="renderTable()">
+                    <option value="الكل">عرض كل المشاريع</option>
+                </select>
+                <!-- أزرار المدير العام -->
+                <button id="btnGmPrint" class="btn btn-dark" style="display:none;" onclick="printProjectReport()">🖨️ طباعة التقرير</button>
+                <button id="btnGmStats" class="btn btn-purple" style="display:none;" onclick="openStatsModal()">📊 إحصائيات شهرية</button>
+            </div>
+        </div>
+
+        <!-- أزرار التصفية السريعة (تظهر للموارد والمدير العام) -->
+        <div class="quick-filters" id="quickFilters" style="display:none;">
+            <button class="qf-btn active" onclick="applyQuickFilter(this, 'الكل')">الكل</button>
+            <button class="qf-btn" onclick="applyQuickFilter(this, 'بانتظار رئيس القسم')">عالقة عند المشرفين</button>
+            <button class="qf-btn" onclick="applyQuickFilter(this, 'الموارد البشرية')">عالقة عند الموارد</button>
+            <button class="qf-btn" onclick="applyQuickFilter(this, 'بانتظار المدير')">بانتظار قرار المدير</button>
+            <button class="qf-btn" onclick="applyQuickFilter(this, 'مكتملة')">مكتملة</button>
+        </div>
+
+        <table id="table"></table>
+    </div>
+
+    <!-- نافذة الإحصائيات الشهرية (خاصة بالمدير العام) -->
+    <div class="modal-overlay" id="statsModalOverlay">
+        <div class="modal" style="width: 800px;">
+            <h3 style="color: var(--primary); text-align: center; border-bottom: 2px solid #eee; padding-bottom:15px;">📊 إحصائيات المخالفات (حسب المشروع والشهر)</h3>
+            <div id="statsContent">جاري الحساب...</div>
+            <div style="text-align: center; margin-top: 20px;">
+                <button class="btn btn-danger" onclick="document.getElementById('statsModalOverlay').style.display='none'">إغلاق</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة القرار / التفاصيل -->
+    <div class="modal-overlay" id="actionModalOverlay">
+        <div class="modal">
+            <h3 style="margin-top: 0; color: #333; text-align: center; border-bottom: 2px solid #eee; padding-bottom:15px;">تفاصيل المخالفة والقرار</h3>
+            <div id="violationDetails" class="details-card"></div>
+
+            <form id="decisionForm">
+                <input type="hidden" name="action" value="update_violation">
+                <input type="hidden" name="row_id" id="row_id"><input type="hidden" name="role" id="role"><input type="hidden" name="signature" id="signature">
+                <input type="hidden" name="decision" id="final_decision"><input type="hidden" name="justification" id="final_justification">
+
+                <div id="ui_dept_head" class="dh-options" style="display:none; background:#fffdf5; padding:15px; border-radius:8px; border:1px solid #ffeeba;">
+                    <h4 style="margin-top:0; color:#856404;">قرار رئيس القسم:</h4>
+                    <label><input type="radio" name="dh_radio" value="لم يثبت مخالفة"> لم يثبت مخالفة</label>
+                    <label><input type="radio" name="dh_radio" value="نقترح توجيه الموظف وتدريبه"> نقترح توجيه الموظف وتدريبه</label>
+                    <label><input type="radio" name="dh_radio" value="المخالفة تستحق الاجراء الجزائي" id="radio_punish"> المخالفة تستحق الاجراء الجزائي</label>
+                    <div class="dh-sub-options" id="dh_sub_options">
+                        <label><input type="radio" name="dh_sub_radio" value="لائحة"> بحسب اللائحة تستوجب:</label><input type="text" id="dh_action_1">
+                        <label><input type="radio" name="dh_sub_radio" value="غير مدرجة"> غير مدرجة، نقترح:</label><input type="text" id="dh_action_2">
+                    </div>
+                    <label style="margin-top:15px;">المبرر:</label><textarea id="dh_justification"></textarea>
+                </div>
+
+                <div id="ui_hr" class="options-box" style="display:none; background:#f4f9ff; padding:15px; border-radius:8px; border:1px solid #b8daff;">
+                    <h4 style="margin-top:0; color:#004085;">قرار الموارد البشرية:</h4>
+                    <select id="hr_decision"><option>لم يثبت مخالفة</option><option>توجيه وتدريب</option><option>إجراء جزائي</option></select>
+                    <label>المبرر:</label><textarea id="hr_justification"></textarea>
+                </div>
+
+                <div id="ui_gm" class="dh-options" style="display:none; background:#f8f9fa; padding:15px; border-radius:8px; border:1px solid #d6d8db;">
+                    <h4 style="margin-top:0; color:#383d41;">القرار النهائي (المدير العام):</h4>
+                    <label><input type="radio" name="gm_radio" value="لم يثبت مخالفة"> لم يثبت مخالفة</label>
+                    <label><input type="radio" name="gm_radio" value="توجيه الموظف وتدريبه"> توجيه الموظف وتدريبه</label>
+                    <label><input type="radio" name="gm_radio" value="المخالفة تستحق الاجراء الجزائي" id="gm_radio_punish"> المخالفة تستحق الاجراء الجزائي</label>
+                    <div class="dh-sub-options" id="gm_sub_options">
+                        <label><input type="radio" name="gm_sub_radio" value="حسم من الراتب"> حسم بقيمة:</label><input type="text" id="gm_discount_val">
+                        <label><input type="radio" name="gm_sub_radio" value="صرف من العمل"> صرف من العمل</label>
+                    </div>
+                    <label style="margin-top:15px;">ملاحظات:</label><textarea id="gm_notes"></textarea>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                        <div><label>رقم المخالفة النهائي:</label><input type="text" id="final_v_no"></div>
+                        <div><label>رقم الاجراء:</label><input type="text" id="action_no_final"></div>
+                    </div>
+                </div>
+            </form>
+            <div style="margin-top: 15px; display: flex; gap: 10px;">
+                <button type="submit" form="decisionForm" id="btnSubmitDecision" class="btn btn-success" style="flex: 1;">اعتماد وتوقيع</button>
+                <button type="button" class="btn btn-danger" style="flex: 1;" onclick="document.getElementById('actionModalOverlay').style.display='none'">إغلاق</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- نموذج الطباعة الفردي المخفي -->
+    <div id="printArea" style="display: none; padding: 40px; background: white; color: black; text-align: right; font-family: 'Tajawal', sans-serif; direction: rtl;">
+        <h2 style="color: #0056b3; border-bottom: 2px solid #0056b3; padding-bottom: 10px;">التقرير الرسمي للمخالفة</h2>
+        <table style="width: 100%; border-collapse: collapse; font-size: 15px; margin-top: 20px;" border="1">
+            <tr><th style="background:#f0f0f0; padding:10px; width:20%;">الاسم</th><td id="p_empName" style="padding:10px;"></td><th style="background:#f0f0f0; padding:10px; width:20%;">الرقم الوظيفي</th><td id="p_empId" style="padding:10px;"></td></tr>
+            <tr><th style="background:#f0f0f0; padding:10px;">المشروع</th><td id="p_project" style="padding:10px;"></td><th style="background:#f0f0f0; padding:10px;">التاريخ</th><td id="p_vDate" style="padding:10px;"></td></tr>
+            <tr><th style="background:#f0f0f0; padding:10px;">نوع المخالفة</th><td colspan="3" id="p_vType" style="padding:10px;"></td></tr>
+            <tr><th style="background:#f0f0f0; padding:10px;">التفاصيل</th><td colspan="3" id="p_vDetails" style="padding:10px;"></td></tr>
+            <tr><th style="background:#eef5f9; padding:10px;">قرار المدير العام</th><td colspan="3" id="p_gmDecFinal" style="padding:10px; font-weight:bold; color:#d9534f;"></td></tr>
+        </table>
+    </div>
+
+    <script>
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz--ncBRJxdcpwY5qxEYp62fuc9zlVB0vm9OMjF2zV045gW68QL0tXpSKjU5pHCmcKdrQ/exec";
+        var role = localStorage.getItem("userRole"); var dept = localStorage.getItem("userDept");
+        if(!role) location.href = "index.html";
+
+        document.getElementById('welcome').innerText = "مرحباً: " + localStorage.getItem("userName") + " (" + role + ")";
+        document.getElementById('role').value = role; document.getElementById('signature').value = localStorage.getItem("userName");
+
+        if(role.includes("رئيس")) document.getElementById('ui_dept_head').style.display = "block";
+        else if (role.includes("موارد")) { document.getElementById('ui_hr').style.display = "block"; document.getElementById('quickFilters').style.display = "flex"; }
+        else if (role.includes("مدير")) { document.getElementById('ui_gm').style.display = "block"; document.getElementById('btnGmPrint').style.display = "block"; document.getElementById('btnGmStats').style.display = "block"; document.getElementById('quickFilters').style.display = "flex"; }
+
+        // Toggles
+        document.getElementsByName('dh_radio').forEach(r => r.addEventListener('change', function() { document.getElementById('dh_sub_options').style.opacity = (this.id === 'radio_punish') ? '1' : '0.5'; document.getElementById('dh_sub_options').style.pointerEvents = (this.id === 'radio_punish') ? 'auto' : 'none'; }));
+        document.getElementsByName('gm_radio').forEach(r => r.addEventListener('change', function() { document.getElementById('gm_sub_options').style.opacity = (this.id === 'gm_radio_punish') ? '1' : '0.5'; document.getElementById('gm_sub_options').style.pointerEvents = (this.id === 'gm_radio_punish') ? 'auto' : 'none'; }));
+
+        var globalRecords = [];
+        var activeStatusFilter = "الكل";
+
+        var fd = new FormData(); fd.append("action", "get_data"); fd.append("role", role); fd.append("department", dept);
+        fetch(SCRIPT_URL, { method: 'POST', body: fd }).then(r => r.json()).then(data => {
+            if (data.status === "error") return; if (data.status === "empty") { document.getElementById('statusInfo').innerHTML = "لا توجد ملفات."; return; }
+            globalRecords = data.data; 
+            populateFilter(); renderTable(); 
+        });
+
+        function populateFilter() {
+            var filterBar = document.getElementById('filterBar'); var select = document.getElementById('projectFilter');
+            var projects = new Set(); globalRecords.forEach((row, i) => { if(i > 0 && row[3]) projects.add(row[3].trim()); });
+            if(projects.size > 0) { filterBar.style.display = "flex"; projects.forEach(p => { var opt = document.createElement('option'); opt.value = p; opt.innerText = p; select.appendChild(opt); }); }
+        }
+
+        function applyQuickFilter(btnElement, statusKeyword) {
+            document.querySelectorAll('.qf-btn').forEach(b => b.classList.remove('active'));
+            btnElement.classList.add('active');
+            activeStatusFilter = statusKeyword;
+            renderTable();
+        }
+
+        function renderTable() {
+            var projFilter = document.getElementById('projectFilter').value;
+            var html = "<tr><th>الاسم</th><th>التاريخ</th><th>حالة الملف</th><th>المشروع</th><th>إجراء</th></tr>";
+            var totalCount = 0; var myPendingCount = 0;
+
+            globalRecords.forEach((row, i) => {
+                if(i > 0) {
+                    var status = row[1] || ""; var projectName = row[3] ? String(row[3]).trim() : "غير محدد";
+                    
+                    // Filters logic
+                    if(projFilter !== "الكل" && projectName !== projFilter) return;
+                    if(activeStatusFilter !== "الكل" && !status.includes(activeStatusFilter)) return;
+                    
+                    totalCount++;
+                    var canAct = false;
+                    if(role.includes("رئيس") && status.includes("رئيس القسم")) { myPendingCount++; canAct = true; }
+                    else if(role.includes("موارد") && status.includes("الموارد")) { myPendingCount++; canAct = true; }
+                    else if(role.includes("مدير") && status.includes("المدير")) { myPendingCount++; canAct = true; }
+
+                    var badgeClass = "badge-warning";
+                    if(status.includes("الموارد")) badgeClass = "badge-info"; else if(status.includes("المدير")) badgeClass = "badge-primary"; else if(status.includes("مكتملة")) badgeClass = "badge-success";
+                    
+                    var btn = status.includes("مكتملة") ? `<button class='btn btn-success' onclick='generatePDF(${row[row.length-1]})'>📄 طباعة</button>` : (canAct ? `<button class='btn btn-primary' onclick='openModal(${row[row.length-1]})'>القرار</button>` : `<button class='btn btn-dark' onclick='openModal(${row[row.length-1]}, true)'>عرض</button>`);
+                    html += `<tr><td>${row[6]||"-"}</td><td>${row[0]?String(row[0]).substring(0,10):"-"}</td><td><span class="badge ${badgeClass}">${status}</span></td><td>${projectName}</td><td>${btn}</td></tr>`;
+                }
+            });
+
+            document.getElementById('table').innerHTML = html;
+            document.getElementById('statusInfo').innerHTML = `
+                <div class="stat-item"><span class="stat-title">إجمالي السجلات (المفلترة)</span><span class="stat-value total">${totalCount}</span></div>
+                <div class="stat-item"><span class="stat-title">تتطلب إجراء منك</span><span class="stat-value pending">${myPendingCount}</span></div>
+            `;
+        }
+
+        // إحصائيات المدير العام الذكية
+        function openStatsModal() {
+            var stats = {};
+            globalRecords.forEach((row, i) => {
+                if(i === 0) return;
+                var proj = row[3] ? row[3].trim() : "أخرى";
+                var dateStr = row[8] ? new Date(row[8]) : new Date(row[0]);
+                var monthYear = isNaN(dateStr) ? "غير محدد" : dateStr.getFullYear() + "-" + String(dateStr.getMonth()+1).padStart(2, '0');
+                
+                if(!stats[proj]) stats[proj] = {};
+                if(!stats[proj][monthYear]) stats[proj][monthYear] = {total: 0, completed: 0, pending: 0};
+                
+                stats[proj][monthYear].total++;
+                if(row[1] && row[1].includes("مكتملة")) stats[proj][monthYear].completed++; else stats[proj][monthYear].pending++;
+            });
+
+            var html = `<table class="stats-table"><tr><th>المشروع</th><th>الشهر</th><th>إجمالي المخالفات</th><th>مكتملة</th><th>قيد المتابعة</th></tr>`;
+            for(var p in stats) {
+                for(var m in stats[p]) {
+                    html += `<tr><td><strong>${p}</strong></td><td dir="ltr">${m}</td><td>${stats[p][m].total}</td><td style="color:green; font-weight:bold;">${stats[p][m].completed}</td><td style="color:red; font-weight:bold;">${stats[p][m].pending}</td></tr>`;
+                }
+            }
+            html += "</table>";
+            document.getElementById('statsContent').innerHTML = html;
+            document.getElementById('statsModalOverlay').style.display = "block";
+        }
+
+        function openModal(id, readOnly = false) { 
+            document.getElementById('row_id').value = id; var record = globalRecords.find(r => r[r.length - 1] == id);
+            if(record) {
+                var html = `<strong>الموظف:</strong> ${record[6]} | <strong>المشروع:</strong> ${record[3]}<hr><strong>المخالفة:</strong> ${record[9]}<br><span style="color:#666;">${record[10]}</span><hr>`;
+                if(record[16]) html += `<div style="background:#eef5f9; padding:8px; border-right:3px solid #0056b3;"><strong>رئيس القسم:</strong> ${record[16]}</div>`;
+                if(record[20]) html += `<div style="background:#eef5f9; padding:8px; border-right:3px solid #17a2b8; margin-top:5px;"><strong>الموارد:</strong> ${record[20]}</div>`;
+                document.getElementById('violationDetails').innerHTML = html;
+            }
+            document.getElementById('decisionForm').style.display = readOnly ? 'none' : 'block'; document.getElementById('btnSubmitDecision').style.display = readOnly ? 'none' : 'block';
+            document.getElementById('actionModalOverlay').style.display = "block"; 
+        }
+
+        function printProjectReport() {
+            var filterValue = document.getElementById('projectFilter').value;
+            var reportHtml = `<div style="direction:rtl; font-family:'Tajawal', Arial; padding:20px;"><h2 style="text-align:center; color:#0056b3;">تقرير المخالفات - ${filterValue === 'الكل' ? 'جميع المشاريع' : filterValue}</h2><table style="width:100%; border-collapse:collapse; text-align:center;" border="1"><tr style="background:#eee;"><th>المشروع</th><th>الموظف</th><th>التاريخ</th><th>المخالفة</th><th>القرار النهائي</th></tr>`;
+            globalRecords.forEach((row, i) => {
+                if(i > 0 && (filterValue === "الكل" || (row[3] && row[3].trim() === filterValue))) {
+                    reportHtml += `<tr><td>${row[3]||"-"}</td><td>${row[6]||"-"}</td><td>${row[8]?String(row[8]).substring(0,10):"-"}</td><td>${row[9]||"-"}</td><td>${row[24]||"-"}</td></tr>`;
+                }
+            });
+            reportHtml += `</table></div>`;
+            var printDiv = document.createElement('div'); printDiv.innerHTML = reportHtml;
+            html2pdf().set({ margin: 0.5, filename: 'تقرير_'+filterValue+'.pdf', html2canvas: { scale: 2 }, jsPDF: { orientation: 'landscape' } }).from(printDiv).save();
+        }
+
+        function generatePDF(id) {
+            var record = globalRecords.find(r => r[r.length - 1] == id); if(!record) return;
+            document.getElementById('p_empName').innerText = record[6]; document.getElementById('p_empId').innerText = record[4]; document.getElementById('p_project').innerText = record[3]; document.getElementById('p_vDate').innerText = record[8]?String(record[8]).substring(0,10):"-"; document.getElementById('p_vType').innerText = record[9]; document.getElementById('p_vDetails').innerText = record[10]; document.getElementById('p_gmDecFinal').innerText = record[24] + " | حسم: " + (record[25]||"لا يوجد");
+            var element = document.getElementById('printArea'); element.style.display = "block"; 
+            html2pdf().set({ margin: 0.5, filename: 'قرار_'+record[6]+'.pdf' }).from(element).save().then(() => element.style.display="none");
+        }
+
+        document.getElementById('decisionForm').onsubmit = function(e) {
+            e.preventDefault(); var fd = new FormData(this);
+            if(role.includes("رئيس")) { var chk = document.querySelector('input[name="dh_radio"]:checked'); if(!chk) return alert("حدد القرار"); fd.set('decision', chk.value); fd.set('justification', document.getElementById('dh_justification').value); } 
+            else if(role.includes("موارد")) { fd.set('decision', document.getElementById('hr_decision').value); fd.set('justification', document.getElementById('hr_justification').value); }
+            else if(role.includes("مدير")) { var chk = document.querySelector('input[name="gm_radio"]:checked'); if(!chk) return alert("حدد القرار"); fd.set('decision', chk.value); fd.set('discount_amount', document.getElementById('gm_discount_val').value); fd.set('notes', document.getElementById('gm_notes').value); fd.set('final_violation_no', document.getElementById('final_v_no').value); fd.set('action_no', document.getElementById('action_no_final').value); }
+            var btn = document.getElementById('btnSubmitDecision'); btn.innerText = "جاري الحفظ..."; btn.disabled = true;
+            fetch(SCRIPT_URL, { method: 'POST', body: fd }).then(() => { alert("تم الحفظ!"); location.reload(); });
+        };
+    </script>
+</body>
+</html>
